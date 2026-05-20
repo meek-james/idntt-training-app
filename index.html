@@ -225,14 +225,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 // PLAN ANCHOR — the entire plan is relative to this date.
 // dayOffset=0 always means May 19 2025 (Week 1, Monday).
 // ─────────────────────────────────────────────────────────────────────────
-var PLAN_START = new Date(2025, 4, 19); // May 19 2025 = Week 1 Mon
-var RACE_DATE  = new Date(2025, 8, 6);  // Sep 6 2025
+var PLAN_START = new Date(2026, 4, 18); // May 19 2025 = Week 1 Mon
+var RACE_DATE  = new Date(2026, 8, 6);  // Sep 6 2025
 
 var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var dayOffset = (function() {
   // Auto-calculate today's position in the plan
   var today = new Date(); today.setHours(0,0,0,0);
-  var start = new Date(2025, 4, 19); start.setHours(0,0,0,0);
+  var start = new Date(2026, 4, 18); start.setHours(0,0,0,0);
   var diff  = Math.round((today - start) / 86400000);
   // Clamp to plan bounds (0 = day 1, 90 = day 91 / race day)
   return Math.max(0, Math.min(90, diff));
@@ -433,18 +433,18 @@ SCH[4] = [
    dtype:'Rest Day', note:'Pre-race nerves are good. They mean you care. The hay is in the barn.',
    bullets:['Sleep as early as possible','Eat a normal dinner — do not overeat','Visualize miles 1-5 (go out easy), 13-20 (hold form), 20+ (dig in)','Trust your training']},
 
-  {tag:'RACE DAY', color:'accent', sub:'Surfers Point Marathon · Sep 6',
+  {tag:'RACE DAY', color:'accent', sub:'Surfers Point Marathon · Sep 6, 2026',
    dtype:'Race Day 🏁', note:'You built this. Trust the training, trust the taper, trust your fitness. IDNTT — you know who you are.',
    bullets:['Goal: sub-3:30 — 8:00/mi pace','Miles 1-6: go out at 8:10-8:15/mi — resist going faster','Miles 7-18: settle into 8:00/mi goal pace','Miles 19-22: hold form, shorten stride if needed','Miles 23-26.2: everything you have got']},
 ];
 
 // Phase metadata
 var PHASES = [
-  {name:'Base Build',  dates:'May 19 – Jun 6',  miles:'10-15', miN:'12', miP:40, gym:4, runs:3, wks:[1,3]},
-  {name:'Aerobic Dev', dates:'Jun 7 – Jun 27',  miles:'15-20', miN:'18', miP:60, gym:4, runs:4, wks:[4,6]},
-  {name:'Peak Build',  dates:'Jun 28 – Jul 25', miles:'20-25', miN:'25', miP:83, gym:4, runs:5, wks:[7,10]},
-  {name:'Taper',       dates:'Jul 26 – Aug 8',  miles:'10-15', miN:'12', miP:40, gym:4, runs:3, wks:[11,12]},
-  {name:'Race Week',   dates:'Aug 31 – Sep 6',  miles:'~8',    miN:'8',  miP:27, gym:1, runs:3, wks:[13,13]},
+  {name:'Base Build',  dates:'May 18 – Jun 5',  miles:'10-15', miN:'12', miP:40, gym:4, runs:3, wks:[1,3]},
+  {name:'Aerobic Dev', dates:'Jun 6 – Jun 26',  miles:'15-20', miN:'18', miP:60, gym:4, runs:4, wks:[4,6]},
+  {name:'Peak Build',  dates:'Jun 27 – Jul 24', miles:'20-25', miN:'25', miP:83, gym:4, runs:5, wks:[7,10]},
+  {name:'Taper',       dates:'Jul 25 – Aug 7',  miles:'10-15', miN:'12', miP:40, gym:4, runs:3, wks:[11,12]},
+  {name:'Race Week',   dates:'Aug 30 – Sep 6',  miles:'~8',    miN:'8',  miP:27, gym:1, runs:3, wks:[13,13]},
 ];
 
 // ── Core helpers ──────────────────────────────────────────────────────────
@@ -525,19 +525,19 @@ function buildWeekSelect() {
   var sel = document.getElementById('wk-select');
   var labels = [
     '', // placeholder for index 0
-    'Week 1 — Base Build (May 19)',
-    'Week 2 — Base Build (May 26)',
-    'Week 3 — Base Build (Jun 2)',
-    'Week 4 — Aerobic Dev (Jun 9)',
-    'Week 5 — Aerobic Dev (Jun 16)',
-    'Week 6 — Aerobic Dev (Jun 23)',
-    'Week 7 — Peak Build (Jun 30)',
-    'Week 8 — Peak Build (Jul 7)',
-    'Week 9 — Peak Build (Jul 14)',
-    'Week 10 — Peak Build (Jul 21)',
-    'Week 11 — Taper (Jul 28)',
-    'Week 12 — Taper (Aug 4)',
-    'Week 13 — Race Week (Sep 1)',
+    'Week 1 — Base Build (May 18)',
+    'Week 2 — Base Build (May 25)',
+    'Week 3 — Base Build (Jun 1)',
+    'Week 4 — Aerobic Dev (Jun 8)',
+    'Week 5 — Aerobic Dev (Jun 15)',
+    'Week 6 — Aerobic Dev (Jun 22)',
+    'Week 7 — Peak Build (Jun 29)',
+    'Week 8 — Peak Build (Jul 6)',
+    'Week 9 — Peak Build (Jul 13)',
+    'Week 10 — Peak Build (Jul 20)',
+    'Week 11 — Taper (Jul 27)',
+    'Week 12 — Taper (Aug 3)',
+    'Week 13 — Race Week (Aug 31)',
   ];
   for (var i = 1; i <= 13; i++) {
     var opt = document.createElement('option');
