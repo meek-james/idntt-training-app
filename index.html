@@ -229,7 +229,14 @@ var PLAN_START = new Date(2025, 4, 19); // May 19 2025 = Week 1 Mon
 var RACE_DATE  = new Date(2025, 8, 6);  // Sep 6 2025
 
 var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-var dayOffset = 0; // 0 = May 19 2025 (plan day 1)
+var dayOffset = (function() {
+  // Auto-calculate today's position in the plan
+  var today = new Date(); today.setHours(0,0,0,0);
+  var start = new Date(2025, 4, 19); start.setHours(0,0,0,0);
+  var diff  = Math.round((today - start) / 86400000);
+  // Clamp to plan bounds (0 = day 1, 90 = day 91 / race day)
+  return Math.max(0, Math.min(90, diff));
+})();
 
 // ── Accent colors ─────────────────────────────────────────────────────────
 var ACCENTS = [
