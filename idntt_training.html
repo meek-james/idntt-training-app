@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IDNTT Train">
+<meta name="theme-color" content="#0a0a0a">
+<title>IDNTT Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;
+  --border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.15);
+  --text:#f0ede8;--muted:rgba(240,237,232,0.45);--dimmed:rgba(240,237,232,0.2);
+  --accent:#ffaa00;--ar:255,170,0;
+  --adim:rgba(255,170,0,0.12);--adim2:rgba(255,170,0,0.06);
+  --green:#42f58d;--orange:#f5a742;--red:#f54242;--blue:#42a8f5;--purple:#a842f5;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+.hdr{flex-shrink:0;padding:52px 20px 14px;background:var(--bg);border-bottom:1px solid var(--border)}
+.hdr-top{display:flex;align-items:flex-start;justify-content:space-between}
+.brand{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;letter-spacing:.04em;color:var(--accent);line-height:1}
+.brand-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.hdr-right{display:flex;align-items:flex-start;gap:10px}
+.race-pill{background:var(--adim);border:1px solid rgba(var(--ar),.25);border-radius:20px;padding:6px 12px;text-align:right;cursor:pointer}
+.race-days{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);line-height:1}
+.race-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.cbtn{width:34px;height:34px;border-radius:50%;border:2px solid var(--border-strong);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.cdot{width:14px;height:14px;border-radius:50%;background:var(--accent);transition:background .2s}
+
+/* Color panel */
+.cpanel{display:none;position:fixed;top:108px;right:16px;z-index:300;background:var(--surface2);border:1px solid var(--border-strong);border-radius:16px;padding:14px;flex-direction:column;gap:4px;box-shadow:0 8px 32px rgba(0,0,0,.7);min-width:168px}
+.cpanel.open{display:flex}
+.cpanel-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.copt{display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 8px;border-radius:8px}
+.copt:active{background:rgba(255,255,255,.06)}
+.cswatch{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.clabel{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--muted);transition:color .15s}
+.ctick{margin-left:auto;font-size:14px;opacity:0}
+.copt.sel .ctick{opacity:1}
+
+/* Nav */
+.nav{flex-shrink:0;display:flex;background:var(--bg);border-bottom:1px solid var(--border);padding:0 20px}
+.nbtn{flex:1;background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:10px 4px;cursor:pointer;position:relative;transition:color .2s}
+.nbtn.active{color:var(--accent)}
+.nbtn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+
+/* Scroll / views */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(20px + var(--safe))}
+.scroll::-webkit-scrollbar{display:none}
+.view{display:none;padding:20px}
+.view.active{display:block}
+
+/* Week jump picker */
+.wk-jump{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.wk-jump-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.wk-select{flex:1;background:var(--surface2);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;padding:8px 12px;cursor:pointer;-webkit-appearance:none;appearance:none}
+.wk-select option{background:var(--surface2);color:var(--text)}
+
+/* Day nav */
+.day-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.date-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:center;flex:1;line-height:1.4}
+.dnbtn{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.dnbtn:active{transform:scale(.93)}
+.dnbtn.at-start{background:var(--adim);border-color:rgba(var(--ar),.35);color:var(--accent)}
+
+/* Phase tag */
+.ptag{display:inline-flex;align-items:center;gap:6px;background:var(--adim2);border:1px solid rgba(var(--ar),.15);border-radius:4px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.pdot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* Session hero */
+.hero{background:var(--surface);border:1px solid var(--border-strong);border-radius:16px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.h-accent::before{background:var(--accent)}.h-green::before{background:var(--green)}.h-orange::before{background:var(--orange)}
+.h-red::before{background:var(--red)}.h-blue::before{background:var(--blue)}.h-purple::before{background:var(--purple)}
+.stype{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+.sname{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:42px;line-height:.95;letter-spacing:-.01em;color:var(--text);margin-bottom:12px}
+.smeta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:500;color:var(--muted)}
+.dbtn{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-strong);border-radius:10px;padding:14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.dbtn:active{background:rgba(255,255,255,.08)}
+.darr{color:var(--muted);font-size:18px}
+.rest-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 24px;text-align:center;margin-bottom:16px}
+.rest-icon{font-size:48px;margin-bottom:12px}
+.rest-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;color:var(--text);margin-bottom:8px}
+.rest-sub{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* Week strip */
+.wstrip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.wstrip-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.wdots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wdcol{text-align:center}
+.wdday{font-size:9px;color:var(--dimmed);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.wdcirc{width:28px;height:28px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;text-transform:uppercase;border:1px solid transparent}
+
+/* Week view */
+.wk-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px}
+.mi-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mi-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mi-num{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--green)}
+.bar-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--green);border-radius:2px}
+.wk-hdr{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.wkcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;cursor:pointer}
+.wkcard.cur{border-color:var(--accent)}
+.wkcard:active{opacity:.8}
+.wkinner{display:flex;align-items:center;padding:14px 16px;gap:14px}
+.wkday{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:30px}
+.wkday.cur{color:var(--accent)}
+.wkind{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.wkcontent{flex:1;min-width:0}
+.wktitle{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.02em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wksub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wkarr{color:var(--dimmed);font-size:16px;flex-shrink:0}
+
+/* Phases view */
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:10px}
+.pcard.cur{border-color:var(--accent);background:linear-gradient(135deg,var(--surface) 0%,rgba(var(--ar),.04) 100%)}
+.pcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.pcard-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:.02em;line-height:1}
+.pcard-dates{font-size:11px;color:var(--muted);margin-top:3px;font-family:'Space Mono',monospace}
+.cbadge{background:var(--accent);color:#0a0a0a;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:4px}
+.pstats{display:flex;gap:12px}
+.pstat{flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;text-align:center}
+.pstat-num{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;line-height:1}
+.pstat-lbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;backdrop-filter:blur(4px);align-items:flex-end}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border-strong);border-radius:24px 24px 0 0;width:100%;max-height:88dvh;overflow-y:auto;padding:0 0 calc(32px + var(--safe));animation:up .28s cubic-bezier(.32,0,0,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:12px auto 20px}
+.mhdr{padding:0 24px 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.mtype{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px}
+.mtitle{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:36px;line-height:.95;letter-spacing:-.01em;color:var(--text)}
+.mbody{padding:0 24px}
+.msec{margin-bottom:24px}
+.msec-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.drow{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.dbullet{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.dtext{font-size:15px;line-height:1.5;color:var(--text)}
+.dnote{font-size:13px;line-height:1.6;color:var(--muted)}
+.mclose{display:block;width:calc(100% - 48px);margin:8px 24px 0;background:rgba(255,255,255,.06);border:1px solid var(--border-strong);border-radius:12px;padding:16px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.mclose:active{opacity:.7}
+
+.c-accent{color:var(--accent)}.c-green{color:var(--green)}.c-orange{color:var(--orange)}
+.c-red{color:var(--red)}.c-blue{color:var(--blue)}.c-purple{color:var(--purple)}.c-muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div><div class="brand">IDNTT</div><div class="brand-sub">Marathon Training</div></div>
+      <div class="hdr-right">
+        <div class="race-pill" onclick="jumpToWeek(1)" title="Tap to go to Week 1">
+          <div class="race-days" id="countdown">—</div>
+          <div class="race-label">Days to race</div>
+        </div>
+        <div class="cbtn" id="cbtn" onclick="toggleCP(event)"><div class="cdot" id="cdot"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cpanel" id="cpanel"><div class="cpanel-title">Accent color</div></div>
+  <div class="nav">
+    <button class="nbtn active" onclick="showView('today',this)">Today</button>
+    <button class="nbtn" onclick="showView('week',this)">This Week</button>
+    <button class="nbtn" onclick="showView('phases',this)">Plan</button>
+  </div>
+  <div class="scroll">
+
+    <!-- TODAY -->
+    <div class="view active" id="view-today">
+      <div class="wk-jump">
+        <div class="wk-jump-label">Jump to</div>
+        <select class="wk-select" id="wk-select" onchange="jumpToWeek(parseInt(this.value))"></select>
+      </div>
+      <div class="day-nav">
+        <button class="dnbtn" id="btn-prev" onclick="shiftDay(-1)">&#8249;</button>
+        <div class="date-label" id="date-label"></div>
+        <button class="dnbtn" id="btn-next" onclick="shiftDay(1)">&#8250;</button>
+      </div>
+      <div class="ptag"><span class="pdot"></span><span id="ptag-text"></span></div>
+      <div id="session-area"></div>
+      <div class="wstrip">
+        <div class="wstrip-lbl">This week</div>
+        <div class="wdots" id="wdots"></div>
+      </div>
+    </div>
+
+    <!-- WEEK -->
+    <div class="view" id="view-week">
+      <div class="wk-bar">
+        <div class="mi-row"><div class="mi-title">Target miles this week</div><div class="mi-num" id="wk-mi">—</div></div>
+        <div class="bar-track"><div class="bar-fill" id="wk-bar" style="width:0%"></div></div>
+      </div>
+      <div class="wk-hdr" id="wk-hdr"></div>
+      <div id="wk-cards"></div>
+    </div>
+
+    <!-- PHASES -->
+    <div class="view" id="view-phases"><div id="phase-cards"></div></div>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhdr"><div class="mtype" id="mtype"></div><div class="mtitle" id="mtitle"></div></div>
+    <div class="mbody" id="mbody"></div>
+    <button class="mclose" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────
+// PLAN ANCHOR — the entire plan is relative to this date.
+// dayOffset=0 always means May 19 2025 (Week 1, Monday).
+// ─────────────────────────────────────────────────────────────────────────
+var PLAN_START = new Date(2025, 4, 19); // May 19 2025 = Week 1 Mon
+var RACE_DATE  = new Date(2025, 8, 6);  // Sep 6 2025
+
+var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var dayOffset = 0; // 0 = May 19 2025 (plan day 1)
+
+// ── Accent colors ─────────────────────────────────────────────────────────
+var ACCENTS = [
+  {id:'crimson',  label:'Crimson',       hex:'#e8302a', r:'232,48,42' },
+  {id:'inferno',  label:'Inferno',       hex:'#ff5500', r:'255,85,0'  },
+  {id:'electric', label:'Electric Blue', hex:'#0a84ff', r:'10,132,255'},
+  {id:'plasma',   label:'Plasma',        hex:'#bf3fff', r:'191,63,255'},
+  {id:'solar',    label:'Solar Gold',    hex:'#ffaa00', r:'255,170,0' },
+];
+
+function applyAccent(a) {
+  var rt = document.documentElement;
+  rt.style.setProperty('--accent', a.hex);
+  rt.style.setProperty('--ar',     a.r);
+  rt.style.setProperty('--adim',   'rgba('+a.r+',.12)');
+  rt.style.setProperty('--adim2',  'rgba('+a.r+',.06)');
+  document.getElementById('cdot').style.background = a.hex;
+  document.querySelectorAll('.copt').forEach(function(el){
+    var s = el.dataset.id === a.id;
+    el.classList.toggle('sel', s);
+    el.querySelector('.clabel').style.color = s ? a.hex : '';
+    el.querySelector('.ctick').textContent  = s ? '✓' : '';
+    if(s) el.querySelector('.ctick').style.color = a.hex;
+  });
+  try{localStorage.setItem('idntt_ac', a.id);}catch(e){}
+}
+
+function buildCP() {
+  var p = document.getElementById('cpanel');
+  ACCENTS.forEach(function(a){
+    var el = document.createElement('div');
+    el.className = 'copt'; el.dataset.id = a.id;
+    el.innerHTML = '<div class="cswatch" style="background:'+a.hex+'"></div><div class="clabel">'+a.label+'</div><span class="ctick"></span>';
+    el.onclick = function(e){ e.stopPropagation(); applyAccent(a); document.getElementById('cpanel').classList.remove('open'); renderToday(); };
+    p.appendChild(el);
+  });
+}
+function toggleCP(e){ if(e)e.stopPropagation(); document.getElementById('cpanel').classList.toggle('open'); }
+document.addEventListener('click', function(){ document.getElementById('cpanel').classList.remove('open'); });
+
+// ─────────────────────────────────────────────────────────────────────────
+// FULL SCHEDULE — 5 phases × 7 days
+// Index 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+// ─────────────────────────────────────────────────────────────────────────
+var SCH = [];
+
+// PHASE 0 — BASE BUILD (Weeks 1-3, May 19 – Jun 6)
+SCH[0] = [
+  {tag:'Upper 1',  color:'blue',   sub:'Chest / Back / Biceps',
+   dtype:'Gym — Upper', note:'Compounds first, rest 2-3 min between heavy sets.',
+   bullets:['Bench press 4x6-8','Weighted pull-ups 4x6-8','Barbell row 3x8','Incline DB press 3x10','Bicep curls 3x10-12','Face pulls 3x15']},
+
+  {tag:'Lower 1',  color:'purple', sub:'Squat / RDL / Leg press / Abs',
+   dtype:'Gym — Lower', note:'Only leg weight day this week — go hard. Two days buffer before Thursday sprints.',
+   bullets:['Back squat 4x6-8','Romanian deadlift 4x8','Leg press 3x10','Walking lunges 3x10 per leg','Hanging leg raises 3x12','Plank 3x45 sec']},
+
+  {tag:'Upper 2',  color:'blue',   sub:'Shoulders / Arms',
+   dtype:'Gym — Upper', note:'Lighter than Monday. Get a solid pump and leave energy for tomorrow.',
+   bullets:['Overhead press 4x6-8','Lateral raises 3x12-15','Skull crushers 3x10','Cable tricep pushdown 3x12','Hammer curls 3x12','Rear delt fly 3x15']},
+
+  {tag:'Lower 2',  color:'orange', sub:'Sprints only — 6-8x200m',
+   dtype:'Track — Sprints', note:'Pure speed. No weights before or after. Rest fully between reps — quality not suffering.',
+   bullets:['10 min easy warm-up jog','Dynamic drills: leg swings, A-skips, high knees','6-8x200m at 85-90% effort','Full rest between reps — walk 200m back','10 min easy cool-down']},
+
+  {tag:'Upper 3',  color:'blue',   sub:'Back / Chest / Triceps',
+   dtype:'Gym — Upper', note:'Third upper day — volume fine, intensity honest. No failure sets.',
+   bullets:['Weighted dips 4x6-8','Cable rows 4x10','DB chest fly 3x12','Lat pulldown 3x10','Tricep overhead extension 3x12','Band pull-aparts 3x20']},
+
+  {tag:'Long Run', color:'green',  sub:'5-7 mi easy pace',
+   dtype:'Run — Long', note:'Most important session of the week. If anything earlier was too hard, back off here — never the other way.',
+   bullets:['Conversational pace throughout (~9:30-10:00/mi)','No watch pressure — run by feel','Carry water if over 5 miles','Last mile slightly faster if feeling good']},
+
+  {tag:'Tempo',    color:'red',    sub:'3-4 mi comfortable effort',
+   dtype:'Run — Tempo', note:'Lowest-stress hard session. Brisk aerobic run, not a race. If legs are shot from Saturday, go easy.',
+   bullets:['1 mile easy warm-up','2-3 miles at comfortable hard (~8:30-9:00/mi)','Can say a few words but not hold a conversation','1 mile easy cool-down']},
+];
+
+// PHASE 1 — AEROBIC DEV (Weeks 4-6, Jun 7 – Jun 27)
+SCH[1] = [
+  {tag:'Upper 1',            color:'blue',   sub:'Chest / Back / Biceps',
+   dtype:'Gym — Upper', note:'Same structure as Base Build. Mileage is climbing — do not rush the heavy sets.',
+   bullets:['Bench press 4x6-8','Weighted pull-ups 4x6-8','Barbell row 3x8','Incline DB press 3x10','Bicep curls 3x10-12','Face pulls 3x15']},
+
+  {tag:'Lower 1',            color:'purple', sub:'Squat / RDL / Leg press / Abs',
+   dtype:'Gym — Lower', note:'Intensity stays. If seriously sore from Sunday tempo, drop one set per movement.',
+   bullets:['Back squat 4x6-8','Romanian deadlift 4x8','Leg press 3x10','Walking lunges 3x10 per leg','Hanging leg raises 3x12','Plank 3x45 sec']},
+
+  {tag:'Upper 2 + Easy Run', color:'blue',   sub:'Shoulders/Arms AM · Easy Run PM',
+   dtype:'Double Day', note:'Keep the PM run genuinely easy — sandwiched between gym and sprint day, it serves as recovery in disguise.',
+   bullets:['AM: Overhead press 4x6-8, lateral raises 3x12, skull crushers 3x10, hammer curls 3x12','PM: 3-4 miles at truly easy pace (9:30+/mi)','Separate by at least 4-5 hours','Hydrate well between sessions']},
+
+  {tag:'Lower 2',            color:'orange', sub:'Sprints only — 6x200m or 3x400m',
+   dtype:'Track — Sprints', note:'Pure speed, no weights. Start preferring 400m reps — better race-specific stimulus.',
+   bullets:['10 min easy warm-up','Dynamic drills','6x200m at 85-90% OR 3x400m at 80-85%','Full rest between reps','10 min cool-down']},
+
+  {tag:'Upper 3',            color:'blue',   sub:'Back / Chest / Triceps',
+   dtype:'Gym — Upper', note:'Last gym day before the weekend run block. Moderate intensity — you are running Sat and Sun.',
+   bullets:['Weighted dips 4x6-8','Cable rows 4x10','DB chest fly 3x12','Lat pulldown 3x10','Tricep overhead extension 3x12','Band pull-aparts 3x20']},
+
+  {tag:'Long Run',           color:'green',  sub:'8-11 mi easy pace',
+   dtype:'Run — Long', note:'Long runs are getting real. This is where the marathon is built. Nothing matters more this weekend.',
+   bullets:['9:30-10:30/mi throughout','Bring fuel if over 9 miles (gel at 45-60 min)','Practice race nutrition here','Walk 30 sec every mile if needed later']},
+
+  {tag:'Tempo',              color:'red',    sub:'4-5 mi comfortable effort',
+   dtype:'Run — Tempo', note:'Still comfortable ceiling — if you are redlining, slow down. Yesterday already stressed the system.',
+   bullets:['1 mile easy warm-up','3 miles at ~8:30/mi (comfortable hard)','1 mile easy cool-down','Optional: last 400m at marathon goal pace (8:00/mi)']},
+];
+
+// PHASE 2 — PEAK BUILD (Weeks 7-10, Jun 28 – Jul 25)
+SCH[2] = [
+  {tag:'Upper 1',            color:'blue',   sub:'Chest / Back / Biceps',
+   dtype:'Gym — Upper', note:'Peak build: trim to 3 sets. Compounds only — drop isolation if pressed. Protect the running.',
+   bullets:['Bench press 3x6-8','Weighted pull-ups 3x6-8','Barbell row 3x8','Incline DB press 3x10','Bicep curls 2x12']},
+
+  {tag:'Lower 1',            color:'purple', sub:'Squat / RDL — moderate intensity',
+   dtype:'Gym — Lower', note:'Not a deload. Not grinding PRs the same week you run 25 miles. Smart, not soft.',
+   bullets:['Back squat 3x8 at ~70-75% 1RM','Romanian deadlift 3x8','Leg press 3x12','Hanging leg raises 3x12']},
+
+  {tag:'Upper 2 + Easy Run', color:'blue',   sub:'Shoulders/Arms AM · Easy Run PM',
+   dtype:'Double Day', note:'Same Wednesday double. Easy run stays truly easy — busiest week of the whole block.',
+   bullets:['AM: Overhead press 3x8, lateral raises 3x12, skull crushers 3x10, hammer curls 2x12','PM: 4-5 miles at easy pace (9:30+/mi)','Eat well between sessions']},
+
+  {tag:'Lower 2',            color:'orange', sub:'Sprints only — 4x200m',
+   dtype:'Track — Sprints', note:'Volume drops to 4 reps in peak. Maintaining the stimulus, not chasing more. Legs are loaded from mileage.',
+   bullets:['10 min easy warm-up','4x200m at 85% effort — quality over quantity','Full rest between each rep','10 min cool-down, keep it short']},
+
+  {tag:'Easy Run',           color:'green',  sub:'4-5 mi recovery pace',
+   dtype:'Run — Easy', note:'Filler run. If Saturday long run feels compromised, this gets cut first — always protect the long run.',
+   bullets:['True recovery pace: 9:30-10:30/mi','No structure, no intervals','Exists to add mileage not stress','If legs are wrecked, cut to 3 miles or walk-run']},
+
+  {tag:'Long Run',           color:'green',  sub:'14-18 mi peak week',
+   dtype:'Run — Long', note:'Peak long run. The single most important session of your entire block. Respect it.',
+   bullets:['9:30-10:30/mi throughout — no heroics','Fuel every 40-45 min (gels or chews)','Carry 16-20 oz water or use a vest','Miles 10-14: hold pace even when it hurts','Walk breaks are fine and smart']},
+
+  {tag:'Tempo + Upper 3',   color:'red',    sub:'Tempo AM · Upper 3 PM',
+   dtype:'Double Day', note:'Works because tempo is aerobic and Upper 3 is upper body only. Legs do not overlap. Eat big between.',
+   bullets:['AM: 4-5 miles — 1 easy, 3 at ~8:30/mi, 1 cool-down','Rest 4+ hours','PM: Weighted dips 3x8, cable rows 3x10, lat pulldown 3x10, band pull-aparts 3x20']},
+];
+
+// PHASE 3 — TAPER (Weeks 11-12, Jul 26 – Aug 8)
+SCH[3] = [
+  {tag:'Upper 1', color:'blue',   sub:'Chest / Back / Biceps',
+   dtype:'Gym — Upper', note:'Taper feels weird — you have energy and want more. Resist it. 3 sets per compound is the ceiling.',
+   bullets:['Bench press 3x6-8','Pull-ups 3x6','Barbell row 3x8','Same weight, fewer sets','Skip isolation if feeling tired']},
+
+  {tag:'Lower 1', color:'purple', sub:'Light weights — 2-3 sets only',
+   dtype:'Gym — Lower', note:'Signaling the movement pattern to your nervous system. Light and crisp.',
+   bullets:['Back squat 2x8 at 65% 1RM','Romanian deadlift 2x8 light','Leg press 2x10','No lunges or extra volume','Leg raises 2x12']},
+
+  {tag:'Upper 2', color:'blue',   sub:'Shoulders / Arms',
+   dtype:'Gym — Upper', note:'Capped at 2-3 sets. In and out in 45 minutes.',
+   bullets:['Overhead press 3x8','Lateral raises 2x12','Skull crushers 2x10','Hammer curls 2x12']},
+
+  {tag:'Lower 2', color:'orange', sub:'Strides only — 3-4x100m',
+   dtype:'Track — Strides', note:'No sprint sets during taper. Strides keep legs sharp without burning matches. 30 minutes total.',
+   bullets:['10 min easy warm-up jog','3-4x100m strides at controlled fast pace — not all-out','Walk back full recovery between each','10 min cool-down']},
+
+  {tag:'Upper 3', color:'blue',   sub:'Back / Chest / Triceps',
+   dtype:'Gym — Upper', note:'Two sets per movement. Maintaining, not building.',
+   bullets:['Weighted dips 2x8','Cable rows 2x10','Lat pulldown 2x10','Band pull-aparts 2x20']},
+
+  {tag:'Long Run',color:'green',  sub:'10 mi (Week 11) / 6 mi (Week 12)',
+   dtype:'Run — Long', note:'After this long run your legs go into full taper mode. Trust the process.',
+   bullets:['Week 11: 10 miles easy — last long run','Week 12: 6 miles easy instead','9:30-10:00/mi — keep it comfortable','Last confidence run before race day']},
+
+  {tag:'Tempo',   color:'red',    sub:'3 easy + 2 mi at MP',
+   dtype:'Run — Tempo', note:'Ingraining goal pace. You want 8:00/mi to feel totally familiar on race day.',
+   bullets:['3 miles easy warm-up','2 miles at goal marathon pace (8:00/mi)','Feel the pace — lock it in your legs','1 mile easy cool-down']},
+];
+
+// PHASE 4 — RACE WEEK (Aug 31 – Sep 6)
+SCH[4] = [
+  {tag:'Easy Run', color:'green',  sub:'3 mi very easy',
+   dtype:'Run — Easy', note:'Nothing you do this week makes you fitter. Rest, fuel, and sleep are the training now.',
+   bullets:['20-30 min at comfortable jog','No watch, no pace goal','Just shake out the legs','Drink extra water all day']},
+
+  {tag:'Shakeout', color:'green',  sub:'20 min very easy',
+   dtype:'Run — Shakeout', note:'Taper legs feel weird before they feel great on race morning. Keep it short.',
+   bullets:['15-20 min light jog','A few 20-second pickups at marathon pace to feel smooth','That is it — done']},
+
+  {tag:'Upper 1',  color:'blue',   sub:'Light upper — no legs at all',
+   dtype:'Gym — Upper (light)', note:'Last gym session. Upper body only, zero legs. Moving to avoid stiffness, not training.',
+   bullets:['Bench press 2x8 at 60% — very light','Pull-ups 2x6 bodyweight','Row 2x10','Done — leave after 30 min']},
+
+  {tag:'Rest',     color:'muted',  sub:'Full rest + carb load',
+   dtype:'Rest Day', note:'Top up glycogen stores today and tomorrow. This is real race prep.',
+   bullets:['No training whatsoever','Carb load: pasta, rice, oats, bread','Aim for 8-9g carbs per kg bodyweight','Stay off your feet as much as possible','Hydrate consistently all day']},
+
+  {tag:'Rest',     color:'muted',  sub:'Full rest + gear prep',
+   dtype:'Rest Day', note:'Nothing new on race day. Shoes broken in, socks no cotton, shorts no chafe, fuel practiced in training.',
+   bullets:['Lay out all race gear tonight','Pin your bib to your shirt','Charge your watch','Prep your fuel (gels in pockets)','Set two alarms','Get to bed early']},
+
+  {tag:'Rest',     color:'muted',  sub:'Final rest + visualize',
+   dtype:'Rest Day', note:'Pre-race nerves are good. They mean you care. The hay is in the barn.',
+   bullets:['Sleep as early as possible','Eat a normal dinner — do not overeat','Visualize miles 1-5 (go out easy), 13-20 (hold form), 20+ (dig in)','Trust your training']},
+
+  {tag:'RACE DAY', color:'accent', sub:'Surfers Point Marathon · Sep 6',
+   dtype:'Race Day 🏁', note:'You built this. Trust the training, trust the taper, trust your fitness. IDNTT — you know who you are.',
+   bullets:['Goal: sub-3:30 — 8:00/mi pace','Miles 1-6: go out at 8:10-8:15/mi — resist going faster','Miles 7-18: settle into 8:00/mi goal pace','Miles 19-22: hold form, shorten stride if needed','Miles 23-26.2: everything you have got']},
+];
+
+// Phase metadata
+var PHASES = [
+  {name:'Base Build',  dates:'May 19 – Jun 6',  miles:'10-15', miN:'12', miP:40, gym:4, runs:3, wks:[1,3]},
+  {name:'Aerobic Dev', dates:'Jun 7 – Jun 27',  miles:'15-20', miN:'18', miP:60, gym:4, runs:4, wks:[4,6]},
+  {name:'Peak Build',  dates:'Jun 28 – Jul 25', miles:'20-25', miN:'25', miP:83, gym:4, runs:5, wks:[7,10]},
+  {name:'Taper',       dates:'Jul 26 – Aug 8',  miles:'10-15', miN:'12', miP:40, gym:4, runs:3, wks:[11,12]},
+  {name:'Race Week',   dates:'Aug 31 – Sep 6',  miles:'~8',    miN:'8',  miP:27, gym:1, runs:3, wks:[13,13]},
+];
+
+// ── Core helpers ──────────────────────────────────────────────────────────
+
+// Get the calendar date for a given plan day offset (0 = May 19 2025)
+function planDate(offset) {
+  var d = new Date(PLAN_START);
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
+// Week number within plan (1-based). Week 1 = days 0-6, Week 2 = days 7-13, etc.
+function planWeek(offset) {
+  return Math.floor(offset / 7) + 1;
+}
+
+// Day of week index from plan offset: 0=Mon ... 6=Sun
+function planDow(offset) {
+  return offset % 7; // Plan starts on Monday so this always works
+}
+
+// Phase index from week number
+function phaseFromWeek(wk) {
+  if (wk <= 3)  return 0;
+  if (wk <= 6)  return 1;
+  if (wk <= 10) return 2;
+  if (wk <= 12) return 3;
+  return 4; // week 13 = race week
+}
+
+// Total plan days = 13 weeks = 91 days (0..90)
+var PLAN_DAYS = 91;
+
+// Jump to a specific week (sets dayOffset to Monday of that week)
+function jumpToWeek(wk) {
+  dayOffset = (wk - 1) * 7; // Monday of week wk
+  renderToday();
+  // sync the select
+  var sel = document.getElementById('wk-select');
+  if (sel) sel.value = wk;
+}
+
+// ── Countdown ─────────────────────────────────────────────────────────────
+function getCountdown() {
+  var t = new Date(); t.setHours(0,0,0,0);
+  var r = new Date(RACE_DATE); r.setHours(0,0,0,0);
+  return Math.max(0, Math.round((r - t) / 86400000));
+}
+
+// ── Color helpers ─────────────────────────────────────────────────────────
+function dotBg(c) {
+  return {accent:'var(--accent)',green:'var(--green)',orange:'var(--orange)',red:'var(--red)',blue:'var(--blue)',purple:'var(--purple)',muted:'var(--muted)'}[c]||'var(--muted)';
+}
+function cCls(c) {
+  return {accent:'c-accent',green:'c-green',orange:'c-orange',red:'c-red',blue:'c-blue',purple:'c-purple',muted:'c-muted'}[c]||'c-muted';
+}
+function hCls(c) {
+  return {accent:'h-accent',green:'h-green',orange:'h-orange',red:'h-red',blue:'h-blue',purple:'h-purple'}[c]||'';
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+var _ms = null;
+function openModal(s) {
+  _ms = s;
+  document.getElementById('mtype').textContent  = s.dtype;
+  document.getElementById('mtype').className    = 'mtype ' + cCls(s.color);
+  document.getElementById('mtitle').textContent = s.tag;
+  var h = '<div class="msec"><div class="msec-title">The workout</div>';
+  s.bullets.forEach(function(b){ h += '<div class="drow"><div class="dbullet" style="background:'+dotBg(s.color)+'"></div><div class="dtext">'+b+'</div></div>'; });
+  h += '</div><div class="msec"><div class="msec-title">Notes</div><div class="dnote">'+s.note+'</div></div>';
+  document.getElementById('mbody').innerHTML = h;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e) { if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
+
+// ── Build week jump select ────────────────────────────────────────────────
+function buildWeekSelect() {
+  var sel = document.getElementById('wk-select');
+  var labels = [
+    '', // placeholder for index 0
+    'Week 1 — Base Build (May 19)',
+    'Week 2 — Base Build (May 26)',
+    'Week 3 — Base Build (Jun 2)',
+    'Week 4 — Aerobic Dev (Jun 9)',
+    'Week 5 — Aerobic Dev (Jun 16)',
+    'Week 6 — Aerobic Dev (Jun 23)',
+    'Week 7 — Peak Build (Jun 30)',
+    'Week 8 — Peak Build (Jul 7)',
+    'Week 9 — Peak Build (Jul 14)',
+    'Week 10 — Peak Build (Jul 21)',
+    'Week 11 — Taper (Jul 28)',
+    'Week 12 — Taper (Aug 4)',
+    'Week 13 — Race Week (Sep 1)',
+  ];
+  for (var i = 1; i <= 13; i++) {
+    var opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = labels[i];
+    sel.appendChild(opt);
+  }
+  sel.value = planWeek(dayOffset);
+}
+
+// ── Render Today ──────────────────────────────────────────────────────────
+function shiftDay(delta) {
+  dayOffset = Math.max(0, Math.min(PLAN_DAYS - 1, dayOffset + delta));
+  renderToday();
+}
+
+function renderToday() {
+  var dow   = planDow(dayOffset);
+  var wk    = planWeek(dayOffset);
+  var pi    = phaseFromWeek(wk);
+  var s     = SCH[pi][dow];
+  var phase = PHASES[pi];
+  var pd    = planDate(dayOffset);
+
+  document.getElementById('countdown').textContent = getCountdown();
+
+  // Date label
+  var dateStr = pd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+  document.getElementById('date-label').textContent = dateStr + '\nWEEK ' + wk + ' · DAY ' + (dow+1);
+
+  document.getElementById('ptag-text').textContent = 'Week ' + wk + ' · ' + phase.name;
+
+  // Nav buttons
+  document.getElementById('btn-prev').className = 'dnbtn' + (dayOffset === 0 ? ' at-start' : '');
+  document.getElementById('btn-next').className = 'dnbtn' + (dayOffset >= PLAN_DAYS-1 ? ' at-start' : '');
+  document.getElementById('btn-prev').disabled  = dayOffset === 0;
+  document.getElementById('btn-next').disabled  = dayOffset >= PLAN_DAYS-1;
+
+  // Sync week select
+  var sel = document.getElementById('wk-select');
+  if (sel) sel.value = wk;
+
+  // Session card
+  var area = document.getElementById('session-area');
+  window._curS = s;
+  if (s.color === 'muted') {
+    area.innerHTML =
+      '<div class="rest-card">'+
+        '<div class="rest-icon">🛌</div>'+
+        '<div class="rest-title">'+s.tag+'</div>'+
+        '<div class="rest-sub">'+s.sub+'</div>'+
+        '<button class="dbtn" style="margin-top:20px" onclick="openModal(window._curS)">What to do today <span class="darr">›</span></button>'+
+      '</div>';
+  } else {
+    area.innerHTML =
+      '<div class="hero '+hCls(s.color)+'" style="margin-bottom:16px">'+
+        '<div class="stype '+cCls(s.color)+'">'+s.dtype+'</div>'+
+        '<div class="sname">'+s.tag+'</div>'+
+        '<div class="smeta"><div class="chip">'+s.sub+'</div></div>'+
+        '<button class="dbtn" onclick="openModal(window._curS)">Full workout details <span class="darr">›</span></button>'+
+      '</div>';
+  }
+
+  // Week strip — show all 7 days of current week, highlight current day
+  var weekStart = dayOffset - dow; // Monday of current week
+  var html = '';
+  for (var i = 0; i < 7; i++) {
+    var wdOffset = weekStart + i;
+    if (wdOffset < 0 || wdOffset >= PLAN_DAYS) {
+      html += '<div class="wdcol"><div class="wdday">'+DAY_NAMES[i]+'</div><div class="wdcirc" style="border-color:var(--border)"></div></div>';
+      continue;
+    }
+    var ws  = SCH[pi][i];
+    var bg  = dotBg(ws.color);
+    var cur = wdOffset === dayOffset;
+    html += '<div class="wdcol" onclick="dayOffset='+wdOffset+';renderToday()" style="cursor:pointer">'+
+      '<div class="wdday">'+DAY_NAMES[i]+'</div>'+
+      '<div class="wdcirc" style="border-color:'+(cur?'var(--accent)':bg+'55')+';background:'+(cur?'var(--adim)':bg+'18')+';border-width:'+(cur?'2px':'1px')+'">'+
+        '<span style="color:'+(cur?'var(--accent)':bg)+'">'+ws.tag.split(' ')[0].substring(0,3).toUpperCase()+'</span>'+
+      '</div></div>';
+  }
+  document.getElementById('wdots').innerHTML = html;
+}
+
+// ── Render Week ───────────────────────────────────────────────────────────
+function renderWeek() {
+  var dow   = planDow(dayOffset);
+  var wk    = planWeek(dayOffset);
+  var pi    = phaseFromWeek(wk);
+  var phase = PHASES[pi];
+
+  document.getElementById('wk-hdr').textContent   = phase.name + ' · Week ' + wk;
+  document.getElementById('wk-mi').textContent     = phase.miN + ' mi';
+  document.getElementById('wk-bar').style.width    = phase.miP + '%';
+
+  window._weekSessions = SCH[pi];
+  var html = '';
+  SCH[pi].forEach(function(s, i) {
+    html +=
+      '<div class="wkcard'+(i===dow?' cur':'')+'" onclick="openModal(window._weekSessions['+i+'])">'+
+        '<div class="wkinner">'+
+          '<div class="wkday'+(i===dow?' cur':'')+'" >'+DAY_NAMES[i]+'</div>'+
+          '<div class="wkind" style="background:'+dotBg(s.color)+'"></div>'+
+          '<div class="wkcontent">'+
+            '<div class="wktitle '+cCls(s.color)+'">'+s.tag+'</div>'+
+            '<div class="wksub">'+s.sub+'</div>'+
+          '</div>'+
+          '<div class="wkarr">›</div>'+
+        '</div>'+
+      '</div>';
+  });
+  document.getElementById('wk-cards').innerHTML = html;
+}
+
+// ── Render Phases ─────────────────────────────────────────────────────────
+function renderPhases() {
+  var cur  = phaseFromWeek(planWeek(dayOffset));
+  var html = '';
+  PHASES.forEach(function(p, i) {
+    html +=
+      '<div class="pcard'+(i===cur?' cur':'')+'">'+
+        '<div class="pcard-top">'+
+          '<div><div class="pcard-name'+(i===cur?' c-accent':'')+'" >'+p.name+'</div><div class="pcard-dates">'+p.dates+'</div></div>'+
+          (i===cur?'<div class="cbadge">Current</div>':'')+
+        '</div>'+
+        '<div class="pstats">'+
+          '<div class="pstat"><div class="pstat-num" style="color:var(--green)">'+p.miles+'</div><div class="pstat-lbl">mi / wk</div></div>'+
+          '<div class="pstat"><div class="pstat-num" style="color:var(--blue)">'+p.gym+'</div><div class="pstat-lbl">gym days</div></div>'+
+          '<div class="pstat"><div class="pstat-num" style="color:var(--orange)">'+p.runs+'</div><div class="pstat-lbl">run days</div></div>'+
+        '</div>'+
+      '</div>';
+  });
+  document.getElementById('phase-cards').innerHTML = html;
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
+  document.querySelectorAll('.nbtn').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('view-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='week')   renderWeek();
+  if(name==='phases') renderPhases();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+buildCP();
+var saved; try{saved=localStorage.getItem('idntt_ac');}catch(e){}
+applyAccent(ACCENTS.filter(function(a){return a.id===saved})[0]||ACCENTS.filter(function(a){return a.id==='solar'})[0]);
+buildWeekSelect();
+renderToday();
+</script>
+</body>
+</html>
