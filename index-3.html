@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IDNTT Train">
+<meta name="theme-color" content="#0a0a0a">
+<title>IDNTT Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;
+  --border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.15);
+  --text:#f0ede8;--muted:rgba(240,237,232,0.45);--dimmed:rgba(240,237,232,0.2);
+  --accent:#ffaa00;--ar:255,170,0;
+  --adim:rgba(255,170,0,0.12);--adim2:rgba(255,170,0,0.06);
+  --green:#42f58d;--orange:#f5a742;--red:#f54242;--blue:#42a8f5;--purple:#a842f5;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+.hdr{flex-shrink:0;padding:52px 20px 14px;background:var(--bg);border-bottom:1px solid var(--border)}
+.hdr-top{display:flex;align-items:flex-start;justify-content:space-between}
+.brand{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;letter-spacing:.04em;color:var(--accent);line-height:1}
+.brand-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.hdr-right{display:flex;align-items:flex-start;gap:10px}
+.race-pill{background:var(--adim);border:1px solid rgba(var(--ar),.25);border-radius:20px;padding:6px 12px;text-align:right;cursor:pointer}
+.race-days{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);line-height:1}
+.race-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.cbtn{width:34px;height:34px;border-radius:50%;border:2px solid var(--border-strong);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.cdot{width:14px;height:14px;border-radius:50%;background:var(--accent);transition:background .2s}
+
+/* Color panel */
+.cpanel{display:none;position:fixed;top:108px;right:16px;z-index:300;background:var(--surface2);border:1px solid var(--border-strong);border-radius:16px;padding:14px;flex-direction:column;gap:4px;box-shadow:0 8px 32px rgba(0,0,0,.7);min-width:168px}
+.cpanel.open{display:flex}
+.cpanel-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.copt{display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 8px;border-radius:8px}
+.copt:active{background:rgba(255,255,255,.06)}
+.cswatch{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.clabel{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--muted);transition:color .15s}
+.ctick{margin-left:auto;font-size:14px;opacity:0}
+.copt.sel .ctick{opacity:1}
+
+/* Nav */
+.nav{flex-shrink:0;display:flex;background:var(--bg);border-bottom:1px solid var(--border);padding:0 20px}
+.nbtn{flex:1;background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:10px 4px;cursor:pointer;position:relative;transition:color .2s}
+.nbtn.active{color:var(--accent)}
+.nbtn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+
+/* Scroll / views */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(20px + var(--safe))}
+.scroll::-webkit-scrollbar{display:none}
+.view{display:none;padding:20px}
+.view.active{display:block}
+
+/* Week jump picker */
+.wk-jump{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.wk-jump-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.wk-select{flex:1;background:var(--surface2);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;padding:8px 12px;cursor:pointer;-webkit-appearance:none;appearance:none}
+.wk-select option{background:var(--surface2);color:var(--text)}
+
+/* Day nav */
+.day-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.date-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:center;flex:1;line-height:1.4}
+.dnbtn{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--border-strong);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.dnbtn:active{transform:scale(.93)}
+.dnbtn.at-start{background:var(--adim);border-color:rgba(var(--ar),.35);color:var(--accent)}
+
+/* Phase tag */
+.ptag{display:inline-flex;align-items:center;gap:6px;background:var(--adim2);border:1px solid rgba(var(--ar),.15);border-radius:4px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.pdot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* Session hero */
+.hero{background:var(--surface);border:1px solid var(--border-strong);border-radius:16px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.h-accent::before{background:var(--accent)}.h-green::before{background:var(--green)}.h-orange::before{background:var(--orange)}
+.h-red::before{background:var(--red)}.h-blue::before{background:var(--blue)}.h-purple::before{background:var(--purple)}
+.stype{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+.sname{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:42px;line-height:.95;letter-spacing:-.01em;color:var(--text);margin-bottom:12px}
+.smeta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:500;color:var(--muted)}
+.dbtn{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-strong);border-radius:10px;padding:14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.dbtn:active{background:rgba(255,255,255,.08)}
+.darr{color:var(--muted);font-size:18px}
+.rest-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 24px;text-align:center;margin-bottom:16px}
+.rest-icon{font-size:48px;margin-bottom:12px}
+.rest-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;color:var(--text);margin-bottom:8px}
+.rest-sub{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* Week strip */
+.wstrip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.wstrip-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.wdots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wdcol{text-align:center}
+.wdday{font-size:9px;color:var(--dimmed);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.wdcirc{width:28px;height:28px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;text-transform:uppercase;border:1px solid transparent}
+
+/* Week view */
+.wk-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px}
+.mi-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mi-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mi-num{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--green)}
+.bar-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--green);border-radius:2px}
+.wk-hdr{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.wkcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;cursor:pointer}
+.wkcard.cur{border-color:var(--accent)}
+.wkcard:active{opacity:.8}
+.wkinner{display:flex;align-items:center;padding:14px 16px;gap:14px}
+.wkday{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:30px}
+.wkday.cur{color:var(--accent)}
+.wkind{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.wkcontent{flex:1;min-width:0}
+.wktitle{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.02em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wksub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wkarr{color:var(--dimmed);font-size:16px;flex-shrink:0}
+
+/* Phases view */
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:10px}
+.pcard.cur{border-color:var(--accent);background:linear-gradient(135deg,var(--surface) 0%,rgba(var(--ar),.04) 100%)}
+.pcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.pcard-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:.02em;line-height:1}
+.pcard-dates{font-size:11px;color:var(--muted);margin-top:3px;font-family:'Space Mono',monospace}
+.cbadge{background:var(--accent);color:#0a0a0a;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:4px}
+.pstats{display:flex;gap:12px}
+.pstat{flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;text-align:center}
+.pstat-num{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;line-height:1}
+.pstat-lbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;backdrop-filter:blur(4px);align-items:flex-end}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border-strong);border-radius:24px 24px 0 0;width:100%;max-height:88dvh;overflow-y:auto;padding:0 0 calc(32px + var(--safe));animation:up .28s cubic-bezier(.32,0,0,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:12px auto 20px}
+.mhdr{padding:0 24px 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.mtype{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px}
+.mtitle{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:36px;line-height:.95;letter-spacing:-.01em;color:var(--text)}
+.mbody{padding:0 24px}
+.msec{margin-bottom:24px}
+.msec-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.drow{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.dbullet{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.dtext{font-size:15px;line-height:1.5;color:var(--text)}
+.dnote{font-size:13px;line-height:1.6;color:var(--muted)}
+.mclose{display:block;width:calc(100% - 48px);margin:8px 24px 0;background:rgba(255,255,255,.06);border:1px solid var(--border-strong);border-radius:12px;padding:16px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.mclose:active{opacity:.7}
+
+.c-accent{color:var(--accent)}.c-green{color:var(--green)}.c-orange{color:var(--orange)}
+.c-red{color:var(--red)}.c-blue{color:var(--blue)}.c-purple{color:var(--purple)}.c-muted{color:var(--muted)}
+</style>
+<style>
+.todaybtn{flex-shrink:0;background:var(--adim);border:1px solid rgba(var(--ar),.35);border-radius:8px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:8px 14px;cursor:pointer}
+.todaybtn:active{opacity:.7}
+.wk-jump-val{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text)}
+.rlist{margin-top:4px}
+.rrow{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.rrow:last-child{margin-bottom:0}
+.rtext{font-size:14px;line-height:1.5;color:var(--text)}
+.rtext b{color:var(--accent);font-weight:500}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div><div class="brand">IDNTT</div><div class="brand-sub">Hybrid Training</div></div>
+      <div class="hdr-right">
+        <div class="race-pill" onclick="goToday()" title="Tap to go to today">
+          <div class="race-days" id="countdown">—</div>
+          <div class="race-label">Week of split</div>
+        </div>
+        <div class="cbtn" id="cbtn" onclick="toggleCP(event)"><div class="cdot" id="cdot"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cpanel" id="cpanel"><div class="cpanel-title">Accent color</div></div>
+  <div class="nav">
+    <button class="nbtn active" onclick="showView('today',this)">Today</button>
+    <button class="nbtn" onclick="showView('week',this)">This Week</button>
+    <button class="nbtn" onclick="showView('phases',this)">Rules</button>
+  </div>
+  <div class="scroll">
+
+    <!-- TODAY -->
+    <div class="view active" id="view-today">
+      <div class="wk-jump">
+        <div class="wk-jump-label">Week</div>
+        <div class="wk-jump-val" id="wk-range"></div>
+        <button class="todaybtn" onclick="goToday()">Today</button>
+      </div>
+      <div class="day-nav">
+        <button class="dnbtn" id="btn-prev" onclick="shiftDay(-1)">&#8249;</button>
+        <div class="date-label" id="date-label"></div>
+        <button class="dnbtn" id="btn-next" onclick="shiftDay(1)">&#8250;</button>
+      </div>
+      <div class="ptag"><span class="pdot"></span><span id="ptag-text"></span></div>
+      <div id="session-area"></div>
+      <div class="wstrip">
+        <div class="wstrip-lbl">This week</div>
+        <div class="wdots" id="wdots"></div>
+      </div>
+    </div>
+
+    <!-- WEEK -->
+    <div class="view" id="view-week">
+      <div class="wk-bar">
+        <div class="pstats">
+          <div class="pstat"><div class="pstat-num" style="color:var(--blue)">3</div><div class="pstat-lbl">gym days</div></div>
+          <div class="pstat"><div class="pstat-num" style="color:var(--green)">3</div><div class="pstat-lbl">run / cardio</div></div>
+          <div class="pstat"><div class="pstat-num" style="color:var(--orange)">&lt;90</div><div class="pstat-lbl">min / session</div></div>
+        </div>
+      </div>
+      <div class="wk-hdr" id="wk-hdr"></div>
+      <div id="wk-cards"></div>
+    </div>
+
+    <!-- RULES -->
+    <div class="view" id="view-phases"><div id="phase-cards"></div></div>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mhdr"><div class="mtype" id="mtype"></div><div class="mtitle" id="mtitle"></div></div>
+    <div class="mbody" id="mbody"></div>
+    <button class="mclose" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────
+// PLAN ANCHOR — the split repeats every week, indefinitely, from this Monday.
+// dayOffset=0 means Monday Oct 5 2026 (Week 1, Day 1).
+// ─────────────────────────────────────────────────────────────────────────
+var PLAN_START = new Date(2026, 9, 5); // Mon Oct 5 2026
+
+var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function todayOffset() {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var start = new Date(PLAN_START); start.setHours(0,0,0,0);
+  return Math.max(0, Math.round((today - start) / 86400000));
+}
+var dayOffset = todayOffset();
+
+// ── Accent colors ─────────────────────────────────────────────────────────
+var ACCENTS = [
+  {id:'crimson',  label:'Crimson',       hex:'#e8302a', r:'232,48,42' },
+  {id:'inferno',  label:'Inferno',       hex:'#ff5500', r:'255,85,0'  },
+  {id:'electric', label:'Electric Blue', hex:'#0a84ff', r:'10,132,255'},
+  {id:'plasma',   label:'Plasma',        hex:'#bf3fff', r:'191,63,255'},
+  {id:'solar',    label:'Solar Gold',    hex:'#ffaa00', r:'255,170,0' },
+];
+
+function applyAccent(a) {
+  var rt = document.documentElement;
+  rt.style.setProperty('--accent', a.hex);
+  rt.style.setProperty('--ar',     a.r);
+  rt.style.setProperty('--adim',   'rgba('+a.r+',.12)');
+  rt.style.setProperty('--adim2',  'rgba('+a.r+',.06)');
+  document.getElementById('cdot').style.background = a.hex;
+  document.querySelectorAll('.copt').forEach(function(el){
+    var s = el.dataset.id === a.id;
+    el.classList.toggle('sel', s);
+    el.querySelector('.clabel').style.color = s ? a.hex : '';
+    el.querySelector('.ctick').textContent  = s ? '✓' : '';
+    if(s) el.querySelector('.ctick').style.color = a.hex;
+  });
+  try{localStorage.setItem('idntt_ac', a.id);}catch(e){}
+}
+
+function buildCP() {
+  var p = document.getElementById('cpanel');
+  ACCENTS.forEach(function(a){
+    var el = document.createElement('div');
+    el.className = 'copt'; el.dataset.id = a.id;
+    el.innerHTML = '<div class="cswatch" style="background:'+a.hex+'"></div><div class="clabel">'+a.label+'</div><span class="ctick"></span>';
+    el.onclick = function(e){ e.stopPropagation(); applyAccent(a); document.getElementById('cpanel').classList.remove('open'); renderToday(); };
+    p.appendChild(el);
+  });
+}
+function toggleCP(e){ if(e)e.stopPropagation(); document.getElementById('cpanel').classList.toggle('open'); }
+document.addEventListener('click', function(){ document.getElementById('cpanel').classList.remove('open'); });
+
+// ─────────────────────────────────────────────────────────────────────────
+// WEEKLY SPLIT — repeats every week
+// Index 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+// ─────────────────────────────────────────────────────────────────────────
+var SCH = [
+  {tag:'Upper A', color:'blue', sub:'Dips / Pull-ups / OHP / Row / Biceps', time:'~65 min',
+   dtype:'Gym — Upper (Strength)',
+   note:'Rest up to 3 min on dips, pull-ups and press; 60–90 sec on curls. No separate triceps today — dips and overhead press cover them. If your shoulders get cranky from dips, swap in bench for a few weeks.',
+   bullets:['Warm-up: 1–2 ramp-up sets per muscle group',
+            'Weighted dips 3x5–8 — lean forward slightly, go to shoulder just below elbow',
+            'Weighted pull-ups 3x5–8',
+            'Overhead press 3x5–8',
+            'Barbell or cable row 2x6–8',
+            'Biceps curl 2x8–12']},
+
+  {tag:'Easy Run', color:'green', sub:'Conversational pace', time:'Easy',
+   dtype:'Run — Easy',
+   note:'Keep it genuinely easy so your legs are fresh for tomorrow\'s plyos and lower day.',
+   bullets:['Conversational pace the whole way','No intervals, no pace goal','Shorter is fine if legs feel heavy']},
+
+  {tag:'Lower + Plyo', color:'purple', sub:'Plyos / Extensions / RDL / Curls', time:'~75–80 min',
+   dtype:'Gym — Lower + Plyometrics',
+   note:'Plyos first while you\'re fresh — about 15–20 min total. Focus on quiet, stiff landings and ease into the single-leg hops. Alternate plyo exercises to save time. Extensions go right after plyos since they\'re your main quad lift. If you\'re running long, superset calves with back extensions.',
+   bullets:['Warm-up: ~5 min dynamic (skips, leg swings, low pogo hops)',
+            'Box jumps 3x4',
+            'Broad jumps 3x4',
+            'Bounds 3x10 m',
+            'Single-leg hops 2x5 per leg',
+            'Single-leg leg extensions 3x6–8 — start ~150–160 per leg',
+            'Romanian deadlift 3x6–8',
+            'Hamstring curl 2x8–10 — start ~165–175, build back toward 185',
+            'Split squat 2x8 per leg',
+            'Calves 3x10–15',
+            'Back extensions 2x10–12']},
+
+  {tag:'Cardio', color:'orange', sub:'Soccer, boxing, or 3–5 mi run', time:'Your pick',
+   dtype:'Cardio',
+   note:'Two days out from legs, so this is your best slot for a longer or harder run when you\'re not playing soccer or boxing.',
+   bullets:['Option 1: Soccer','Option 2: Boxing / sparring','Option 3: 3–5 mile run — can be your harder or longer run of the week']},
+
+  {tag:'Upper B', color:'blue', sub:'Incline / Row / Delts / Arms', time:'~60 min',
+   dtype:'Gym — Upper (Hypertrophy)',
+   note:'Lighter, pump-focused day. Superset lateral raises with rear delts and biceps with triceps to save time. Rest 60–90 sec on accessories.',
+   bullets:['Warm-up: 1–2 ramp-up sets per muscle group',
+            'Incline press 2x6–10',
+            'Chest-supported row 2x8–10',
+            'Lateral raise 2x10–15 — superset with rear delt fly 2x12–15',
+            'Biceps exercise #1 2x8–12',
+            'Biceps exercise #2 2x8–12',
+            'Triceps 2x8–12']},
+
+  {tag:'Rest', color:'muted', sub:'Full rest day',
+   dtype:'Rest Day',
+   note:'Recovery is where the strength gains actually happen.',
+   bullets:['No training','Eat well and get good sleep','Light walking is fine']},
+
+  {tag:'Run Club + Abs', color:'green', sub:'Short run with IDNTT · 3 ab exercises', time:'Short run',
+   dtype:'Run + Core',
+   note:'Do your ab work after the run.',
+   bullets:['Short run with the run club','3 ab exercises — 2–3 sets each']},
+];
+
+// Training rules (shown in the Rules tab)
+var RULES = [
+  {name:'Warm-ups', items:['1–2 ramp-up sets before the first lift for each muscle group','~5 min dynamic warm-up before plyos']},
+  {name:'Effort', items:['Working sets: stop <b>1–2 reps short of failure</b>','2 working sets per exercise, 3 on main compounds']},
+  {name:'Rest', items:['<b>Up to 3 min</b> on compound lifts','<b>60–90 sec</b> on accessories','Superset non-competing exercises to save time']},
+  {name:'Progression', items:['Hit the top of the rep range on every set → add weight next session']},
+  {name:'Plyos', items:['~40–60 total jumps per session','Quiet, stiff landings — ease into single-leg work']},
+  {name:'Time cap', items:['Every session under <b>90 min</b>','Leg day is the longest — superset calves with back extensions if tight']},
+  {name:'Running', items:['No hard runs the day after legs','Thursday is the best slot for a long or hard run']},
+];
+
+// ── Core helpers ──────────────────────────────────────────────────────────
+function planDate(offset) { var d = new Date(PLAN_START); d.setDate(d.getDate() + offset); return d; }
+function planWeek(offset) { return Math.floor(offset / 7) + 1; }
+function planDow(offset)  { return offset % 7; }
+
+function fmtShort(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function weekRange(offset) {
+  var mon = planDate(offset - planDow(offset));
+  var sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+  return fmtShort(mon) + ' – ' + fmtShort(sun);
+}
+
+function goToday() { dayOffset = todayOffset(); renderToday(); var a = document.querySelector('.nbtn.active'); if (a && a.textContent !== 'Today') showView('today', document.querySelector('.nbtn')); }
+
+// ── Color helpers ─────────────────────────────────────────────────────────
+function dotBg(c) {
+  return {accent:'var(--accent)',green:'var(--green)',orange:'var(--orange)',red:'var(--red)',blue:'var(--blue)',purple:'var(--purple)',muted:'var(--muted)'}[c]||'var(--muted)';
+}
+function cCls(c) {
+  return {accent:'c-accent',green:'c-green',orange:'c-orange',red:'c-red',blue:'c-blue',purple:'c-purple',muted:'c-muted'}[c]||'c-muted';
+}
+function hCls(c) {
+  return {accent:'h-accent',green:'h-green',orange:'h-orange',red:'h-red',blue:'h-blue',purple:'h-purple'}[c]||'';
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+function openModal(s) {
+  document.getElementById('mtype').textContent  = s.dtype;
+  document.getElementById('mtype').className    = 'mtype ' + cCls(s.color);
+  document.getElementById('mtitle').textContent = s.tag;
+  var h = '<div class="msec"><div class="msec-title">The workout</div>';
+  s.bullets.forEach(function(b){ h += '<div class="drow"><div class="dbullet" style="background:'+dotBg(s.color)+'"></div><div class="dtext">'+b+'</div></div>'; });
+  h += '</div><div class="msec"><div class="msec-title">Notes</div><div class="dnote">'+s.note+'</div></div>';
+  document.getElementById('mbody').innerHTML = h;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e) { if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
+
+// ── Render Today ──────────────────────────────────────────────────────────
+function shiftDay(delta) { dayOffset = Math.max(0, dayOffset + delta); renderToday(); }
+
+function renderToday() {
+  var dow = planDow(dayOffset);
+  var wk  = planWeek(dayOffset);
+  var s   = SCH[dow];
+  var pd  = planDate(dayOffset);
+
+  document.getElementById('countdown').textContent = wk;
+  document.getElementById('wk-range').textContent  = weekRange(dayOffset);
+
+  var dateStr = pd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+  document.getElementById('date-label').textContent = dateStr + '\nWEEK ' + wk + ' · DAY ' + (dow+1);
+  document.getElementById('ptag-text').textContent  = 'Week ' + wk + ' · Upper / Lower+Plyo / Upper';
+
+  document.getElementById('btn-prev').className = 'dnbtn' + (dayOffset === 0 ? ' at-start' : '');
+  document.getElementById('btn-prev').disabled  = dayOffset === 0;
+
+  var area = document.getElementById('session-area');
+  window._curS = s;
+  if (s.color === 'muted') {
+    area.innerHTML =
+      '<div class="rest-card">'+
+        '<div class="rest-icon">🛌</div>'+
+        '<div class="rest-title">'+s.tag+'</div>'+
+        '<div class="rest-sub">'+s.sub+'</div>'+
+        '<button class="dbtn" style="margin-top:20px" onclick="openModal(window._curS)">What to do today <span class="darr">›</span></button>'+
+      '</div>';
+  } else {
+    area.innerHTML =
+      '<div class="hero '+hCls(s.color)+'" style="margin-bottom:16px">'+
+        '<div class="stype '+cCls(s.color)+'">'+s.dtype+'</div>'+
+        '<div class="sname">'+s.tag+'</div>'+
+        '<div class="smeta"><div class="chip">'+s.sub+'</div>'+(s.time?'<div class="chip">'+s.time+'</div>':'')+'</div>'+
+        '<button class="dbtn" onclick="openModal(window._curS)">Full workout details <span class="darr">›</span></button>'+
+      '</div>';
+  }
+
+  var weekStart = dayOffset - dow;
+  var html = '';
+  for (var i = 0; i < 7; i++) {
+    var wdOffset = weekStart + i;
+    var ws  = SCH[i];
+    var bg  = dotBg(ws.color);
+    var cur = wdOffset === dayOffset;
+    html += '<div class="wdcol" onclick="dayOffset='+wdOffset+';renderToday()" style="cursor:pointer">'+
+      '<div class="wdday">'+DAY_NAMES[i]+'</div>'+
+      '<div class="wdcirc" style="border-color:'+(cur?'var(--accent)':bg+'55')+';background:'+(cur?'var(--adim)':bg+'18')+';border-width:'+(cur?'2px':'1px')+'">'+
+        '<span style="color:'+(cur?'var(--accent)':bg)+'">'+ws.tag.split(' ')[0].substring(0,3).toUpperCase()+'</span>'+
+      '</div></div>';
+  }
+  document.getElementById('wdots').innerHTML = html;
+}
+
+// ── Render Week ───────────────────────────────────────────────────────────
+function renderWeek() {
+  var dow = planDow(dayOffset);
+  var wk  = planWeek(dayOffset);
+  document.getElementById('wk-hdr').textContent = 'Week ' + wk + ' · ' + weekRange(dayOffset);
+
+  var html = '';
+  SCH.forEach(function(s, i) {
+    html +=
+      '<div class="wkcard'+(i===dow?' cur':'')+'" onclick="openModal(SCH['+i+'])">'+
+        '<div class="wkinner">'+
+          '<div class="wkday'+(i===dow?' cur':'')+'">'+DAY_NAMES[i]+'</div>'+
+          '<div class="wkind" style="background:'+dotBg(s.color)+'"></div>'+
+          '<div class="wkcontent">'+
+            '<div class="wktitle '+cCls(s.color)+'">'+s.tag+'</div>'+
+            '<div class="wksub">'+s.sub+(s.time?' · '+s.time:'')+'</div>'+
+          '</div>'+
+          '<div class="wkarr">›</div>'+
+        '</div>'+
+      '</div>';
+  });
+  document.getElementById('wk-cards').innerHTML = html;
+}
+
+// ── Render Rules ──────────────────────────────────────────────────────────
+function renderPhases() {
+  var html = '';
+  RULES.forEach(function(r) {
+    html += '<div class="pcard"><div class="pcard-top"><div class="pcard-name">'+r.name+'</div></div><div class="rlist">';
+    r.items.forEach(function(it){
+      html += '<div class="rrow"><div class="dbullet" style="background:var(--accent)"></div><div class="rtext">'+it+'</div></div>';
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('phase-cards').innerHTML = html;
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
+  document.querySelectorAll('.nbtn').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('view-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='week')   renderWeek();
+  if(name==='phases') renderPhases();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+buildCP();
+var saved; try{saved=localStorage.getItem('idntt_ac');}catch(e){}
+applyAccent(ACCENTS.filter(function(a){return a.id===saved})[0]||ACCENTS.filter(function(a){return a.id==='solar'})[0]);
+renderToday();
+</script>
+</body>
+</html>
