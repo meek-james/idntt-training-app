@@ -294,9 +294,9 @@ document.addEventListener('click', function(){ document.getElementById('cpanel')
 // Index 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
 // ─────────────────────────────────────────────────────────────────────────
 var SCH = [
-  {tag:'Upper A', color:'blue', sub:'Dips / Pull-ups / HSPU / Row / Delts / Arms', time:'~60 min',
+  {tag:'Upper A', color:'blue', sub:'Dips / Pull-ups / HSPU / Row / Delts / Biceps', time:'~55 min',
    dtype:'Gym — Upper (Strength)',
-   note:'Every lift 2x6–8, straight sets. Rest up to 3 min on dips, pull-ups and HSPU; 60–90 sec on everything else. HSPU: wall-supported, head to a mat, elbows at ~45°. Can\'t hit 6? Elevate your head on a mat stack (shorter range) or do pike push-ups with feet on a box. Hitting 8 easily? Add a deficit (hands on parallettes or plates). Use cables and machines for delts today (lighter on the joints), dumbbells on Friday. If your shoulders get cranky from dips, swap in bench for a few weeks.',
+   note:'Every lift 2x6–8, straight sets. No direct triceps today — dips and HSPU cover them. Rest up to 3 min on dips, pull-ups and HSPU; 60–90 sec on everything else. HSPU: wall-supported, head to a mat, elbows at ~45°. Can\'t hit 6? Elevate your head on a mat stack (shorter range) or do pike push-ups with feet on a box. Hitting 8 easily? Add a deficit (hands on parallettes or plates). Use cables and machines for delts today (lighter on the joints), dumbbells on Friday. If your shoulders get cranky from dips, swap in bench for a few weeks.',
    bullets:['Warm-up: 1–2 ramp-up sets per muscle group',
             'Weighted dips 2x6–8 — lean forward slightly, go to shoulder just below elbow',
             'Weighted pull-ups 2x6–8',
@@ -304,8 +304,7 @@ var SCH = [
             'Barbell or cable row 2x6–8',
             'Cable lateral raise 2x6–8 — strict, no swinging',
             'Reverse pec deck 2x6–8',
-            'Biceps curl 2x6–8',
-            'Overhead cable triceps extension 2x6–8']},
+            'Biceps curl 2x6–8']},
 
   {tag:'Easy Run', color:'green', sub:'Conversational pace', time:'Easy',
    dtype:'Run — Easy',
@@ -332,17 +331,18 @@ var SCH = [
    note:'Two days out from legs, so this is your best slot for a longer or harder run when you\'re not playing soccer or boxing.',
    bullets:['Option 1: Soccer','Option 2: Boxing / sparring','Option 3: 3–5 mile run — can be your harder or longer run of the week']},
 
-  {tag:'Upper B', color:'blue', sub:'Incline / Row / Delts / Arms / Forearms', time:'~60 min',
+  {tag:'Upper B', color:'blue', sub:'HSPU / Incline / Row / Delts / Arms / Forearms', time:'~65–70 min',
    dtype:'Gym — Upper (Hypertrophy)',
-   note:'Lighter, pump-focused day. Second delt and triceps hit of the week — dumbbells for delts, pushdowns for triceps so they differ from Monday. Every lift 2x6–8, straight sets; rest up to 3 min on incline and row, 60–90 sec on the rest.',
+   note:'Lighter, pump-focused day. Second HSPU and delt session of the week — HSPU first while fresh for skill practice, dumbbells for delts. Overhead extension is your one direct triceps exercise: it stretches the long head, which grows the most. Every lift 2x6–8, straight sets; rest up to 3 min on HSPU, incline and row, 60–90 sec on the rest.',
    bullets:['Warm-up: 1–2 ramp-up sets per muscle group',
+            'Handstand push-ups 2x6–8 — wall-supported',
             'Incline press 2x6–8',
             'Chest-supported row 2x6–8',
             'DB lateral raise 2x6–8 — strict, no swinging',
             'DB rear delt fly 2x6–8',
             'Biceps exercise #1 2x6–8',
             'Biceps exercise #2 2x6–8',
-            'Triceps pushdown 2x6–8',
+            'Overhead cable triceps extension 2x6–8 — full stretch at the bottom',
             'Reverse barbell curl 2x6–8',
             'Wrist curl 2x6–8']},
 
@@ -363,11 +363,11 @@ var RULES = [
   {name:'Effort', items:['Working sets: stop <b>1–2 reps short of failure</b>','<b>2 sets of 6–8</b> on every lift — plyos are the only exception']},
   {name:'Rest', items:['<b>Up to 3 min</b> on compound lifts','<b>60–90 sec</b> on accessories','<b>No supersets</b> — straight sets only']},
   {name:'Progression', items:['Hit 8 reps on both sets → add weight next session','HSPU: progress range of motion instead — less head elevation, then a deficit']},
-  {name:'Twice-a-week muscles', items:['Side + rear delts: <b>Mon</b> (cables/machine) and <b>Fri</b> (dumbbells)','Triceps: <b>Mon</b> (dips, HSPU, overhead extension) and <b>Fri</b> (pushdowns)']},
+  {name:'Twice-a-week muscles', items:['Side + rear delts: <b>Mon</b> (cables/machine) and <b>Fri</b> (dumbbells)','Handstand push-ups: <b>Mon</b> and <b>Fri</b>','Triceps: <b>Mon</b> (dips, HSPU) and <b>Fri</b> (HSPU, overhead extension)']},
   {name:'Plyos', items:['Max effort every rep, full 90 sec rest — quality over volume','Depth jumps: 12–18" box, jump high and fast','Ease into single-leg hops; stick each landing']},
   {name:'6-week plyo test', items:['Baseline now, retest every 3 weeks — fresh, before lifting, same time of day','<b>Vertical jump:</b> wall jump-and-reach, best of 3','<b>10–20 yd sprint:</b> timed or filmed','<b>Running economy:</b> avg heart rate on 1–2 mi at a fixed easy pace','Vertical up 1–2"+ or sprint faster → keep plyos; no change → cut to a short warm-up']},
   {name:'Fixing the calf imbalance', items:['Start every single-leg exercise with the <b>right</b> leg; left matches its reps','Optional: 1 extra calf raise set on the right until they even out']},
-  {name:'Time cap', items:['Every session under <b>90 min</b> — Upper A ~60, Lower ~70, Upper B ~60','If you\'re tight on time, cut one accessory set rather than rushing rest']},
+  {name:'Time cap', items:['Every session under <b>90 min</b> — Upper A ~55, Lower ~70, Upper B ~65–70','If you\'re tight on time, cut one accessory set rather than rushing rest']},
   {name:'Running', items:['No hard runs the day after legs','Thursday is the best slot for a long or hard run']},
 ];
 
